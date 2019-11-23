@@ -13,23 +13,11 @@
  * TODO: figure out a way to compress the LTC BRDF data
  */
 
-import {
-	ClampToEdgeWrapping,
-	DataTexture,
-	FloatType,
-	LinearFilter,
-	NearestFilter,
-	RGBAFormat,
-	ShaderLib,
-	UVMapping,
-	UniformsLib
-} from "./three.module.js";
-
 // Real-Time Polygonal-Light Shading with Linearly Transformed Cosines
 // by Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt
 // code: https://github.com/selfshadow/ltc_code/
 
-var RectAreaLightUniformsLib = {
+THREE.RectAreaLightUniformsLib = {
 
 	init: function () {
 
@@ -41,21 +29,19 @@ var RectAreaLightUniformsLib = {
 
 		// data textures
 
-		var ltc_1 = new DataTexture( new Float32Array( LTC_MAT_1 ), 64, 64, RGBAFormat, FloatType, UVMapping, ClampToEdgeWrapping, ClampToEdgeWrapping, LinearFilter, NearestFilter, 1 );
-		var ltc_2 = new DataTexture( new Float32Array( LTC_MAT_2 ), 64, 64, RGBAFormat, FloatType, UVMapping, ClampToEdgeWrapping, ClampToEdgeWrapping, LinearFilter, NearestFilter, 1 );
+		var ltc_1 = new THREE.DataTexture( new Float32Array( LTC_MAT_1 ), 64, 64, THREE.RGBAFormat, THREE.FloatType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.NearestFilter, 1 );
+		var ltc_2 = new THREE.DataTexture( new Float32Array( LTC_MAT_2 ), 64, 64, THREE.RGBAFormat, THREE.FloatType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.NearestFilter, 1 );
 
-		UniformsLib.LTC_1 = ltc_1;
-		UniformsLib.LTC_2 = ltc_2;
+		THREE.UniformsLib.LTC_1 = ltc_1;
+		THREE.UniformsLib.LTC_2 = ltc_2;
 
 		// add ltc data textures to material uniforms
 
 		var ltc = { ltc_1: { value: null }, ltc_2: { value: null } };
 
-		Object.assign( ShaderLib.standard.uniforms, ltc );
-		Object.assign( ShaderLib.physical.uniforms, ltc );
+		Object.assign( THREE.ShaderLib.standard.uniforms, ltc );
+		Object.assign( THREE.ShaderLib.physical.uniforms, ltc );
 
 	}
 
 };
-
-export { RectAreaLightUniformsLib };

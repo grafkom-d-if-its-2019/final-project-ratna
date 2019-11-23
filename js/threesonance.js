@@ -1,25 +1,107 @@
-import * as THREE from './three.module.js'
-import { RectAreaLightUniformsLib } from './RectAreaLightUniformsLib.js'
-
 var threesonance = {}
 const width = window.innerWidth
 const height = window.innerHeight
 const camSpeed = -0.1
-// const material = new THREE.MeshBasicMaterial()
+
+// GRID MATERIAL
+var material_1 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_2 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_3 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_4 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_5 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_6 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+var material_7 = new THREE.MeshPhongMaterial({ 
+    color: new THREE.Color('gray'), 
+    emissive: new THREE.Color('black'), 
+    specular: 0x111111, 
+    shininess: 143, 
+    transparent: true, 
+    opacity: 0.3,
+    side: THREE.DoubleSide
+});
+
+// BUTTON MATERIAL
 const material = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+    color: 0x787878,
     roughness: 0.0,
     metalness: 0.5,
     reflectivity: 1.0,
     side: THREE.DoubleSide
 })
+
+const material_trans = new THREE.MeshBasicMaterial({
+    color: "purple", 
+    wireframe: true,
+    transparent: true, opacity: 0.25
+})
+
 const buttonGeometry = new THREE.BoxGeometry(.5, .4, .7)
+const grid = new THREE.PlaneGeometry(0.88, 10000, 10);
 var key = []
 var font = undefined
 var current = undefined
+var materialGrid = [];
+
+materialGrid.push(material_1);
+materialGrid.push(material_2);
+materialGrid.push(material_3);
+materialGrid.push(material_4);
+materialGrid.push(material_5);
+materialGrid.push(material_6);
+materialGrid.push(material_7);
 
 const onKeyDown = event => {
-    if (event.code == 'KeyS') key[0] = true
+    if (event.code == 'KeyS') {
+        key[0] = true;
+    }
     if (event.code == 'KeyD') key[1] = true
     if (event.code == 'KeyF') key[2] = true
     if (event.code == 'Space') key[3] = true
@@ -35,7 +117,10 @@ const onKeyDown = event => {
 }
 
 const onKeyUp = event => {
-    if (event.code == 'KeyS') key[0] = false
+    if (event.code == 'KeyS') {
+        key[0] = false;
+        
+    }
     if (event.code == 'KeyD') key[1] = false
     if (event.code == 'KeyF') key[2] = false
     if (event.code == 'Space') key[3] = false
@@ -66,32 +151,27 @@ threesonance.initButton = () => {
     return arr
 }
 
-threesonance.initGrid = length => {
-    const scaleZ = 1
+threesonance.initGrid = () => {
     var arr = []
-    for (let i = 0; i < length; i++) {
-        var grid = new THREE.GridHelper(14, 7, 0x888888, 0x888888)
-        grid.position.set(0, 0, 0-i*14*scaleZ)
-        grid.scale.set(.5, 1, scaleZ)
-        arr.push(grid)
+    for (let i = 0; i < 7; i++) {
+        var plane = new THREE.Mesh(grid, materialGrid[i]);
+        plane.position.x = -3+i
+        plane.position.y = 0
+        plane.position.z = 0
+        plane.rotation.x = Math.PI / 2
+        arr.push(plane)
     }
     return arr
 }
 
 threesonance.initWorld = () => {
-    var boxG = new THREE.BoxGeometry(10, 10, 1000)
-    threesonance.lorong = new THREE.Mesh(boxG, material)
-    threesonance.lorong.position.set(0, 2.25, 0)
-    for (var i=0;i<10;i++) {
-        var light = new THREE.RectAreaLight(0x00ffff, 0, 1, 1)
-        light.position.set(0, 3, -3*i)
-        if (i%3==0) light.color.setHex(0x00ffff)
-        if (i%3==1) light.color.setHex(0xff00ff)
-        if (i%3==2) light.color.setHex(0xffff00)
-        light.lookAt(0,3,1)
-        threesonance.lorong.add(light)
-    }
-    threesonance.scene.add(threesonance.lorong)
+    let loader = new THREE.GLTFLoader();
+    loader.load('./world/map.glb', function(gltf){
+        var cube2 = gltf.scene.children[0];
+    //     cube2.scale.set(1,1,1);
+        gltf.scene.position.set(0,-1,3.2);
+        threesonance.scene.add(gltf.scene);
+    });
 }
 
 threesonance.moveUI = () => {
@@ -101,12 +181,16 @@ threesonance.moveUI = () => {
         threesonance.button[i].position.z += camSpeed
         if (key[i]) {
             threesonance.button[i].position.y = 0
-            threesonance.button[i].children[1].intensity = 3
+            threesonance.button[i].children[1].intensity = 10
+            threesonance.grids[i].material.emissive.setHex(0xFF0000);
+            threesonance.grids[i].material.opacity = 1;
         }
         else {
             threesonance.button[i].position.y = .2
             if (threesonance.button[i].children[1].intensity > 0)
-                threesonance.button[i].children[1].intensity -= .25
+                threesonance.button[i].children[1].intensity -= .5
+                threesonance.grids[i].material.emissive.setHex(0x000000);
+                threesonance.grids[i].material.opacity = 0.3;
         }
     }
 }
@@ -131,8 +215,8 @@ threesonance.resonance = () => {
 threesonance.anim = () => {
     requestAnimationFrame(threesonance.anim)
     threesonance.moveUI()
-    threesonance.resonance()
-    threesonance.fade()
+    // threesonance.resonance()
+    // threesonance.fade()
     threesonance.renderer.render(threesonance.scene, threesonance.camera)
 }
 
@@ -141,7 +225,8 @@ threesonance.init = () => {
     THREE.Cache.enabled = true;
     threesonance.scene = new THREE.Scene()
     threesonance.scene.background = new THREE.Color(0x000000)
-    RectAreaLightUniformsLib.init()
+    threesonance.scene.add(new THREE.AmbientLight({color: new THREE.Color('white'), intensity: 0.0001}) )
+    // RectAreaLightUniformsLib.init()
     threesonance.camera = new THREE.PerspectiveCamera(
         90, 
         width / height, 
@@ -156,9 +241,9 @@ threesonance.init = () => {
     threesonance.renderer.setPixelRatio(devicePixelRatio)
     document.body.appendChild(threesonance.renderer.domElement)
     threesonance.initWorld()
-    var grids = threesonance.initGrid(100)
-    for (let i = 0; i < grids.length; i++) {
-        threesonance.scene.add(grids[i])
+    threesonance.grids = threesonance.initGrid()
+    for (let i = 0; i < threesonance.grids.length; i++) {
+        threesonance.scene.add(threesonance.grids[i])
     }
     threesonance.button = threesonance.initButton()
     for (let i = 0; i < threesonance.button.length; i++) {
