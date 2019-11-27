@@ -315,7 +315,155 @@
             // threesonance.renderer.render(threesonance.scene, threesonance.camera)
             current = new Date().getSeconds()
             threesonance.anim()
+            threesonance.AudioNode.start(0)
         } )
     }
+    //FILE LOAD
+    
 
-    threesonance.init()
+    function musicLoad(){
+        var AudioSourceNode = null;
+        var PlaySourceNode = null;
+        var audioCtx = new AudioContext()
+
+
+        jQuery('#__drop').on('drop', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            var data = e.originalEvent.dataTransfer;
+            var file = data.files[0];
+            var file_name = file.name
+            console.log(file_name);
+            jQuery.when(initAudio(data)).done(function(b){
+                jQuery('#__drop').css('display', 'none')
+                makeAudio(b);
+            });
+        });
+    
+        jQuery(document).on('dragover', function(){
+            return false;
+        });
+
+        function generatePeaksArray(buffer, threshold, bufferstart){
+            var result = []
+        
+            var length = buffer.length
+            for(var i =0; i<length; i++){
+                if(buffer[i] > threshold){
+                    result.push([i+bufferstart, (i+bufferstart)/sampleRate, buffer[i]]);
+                    console.log(i)
+                    i+=3000;
+                }
+                i++;
+            }
+            return result;
+        }
+
+        function normalize(x){
+            return x-(-1)/(1-(-1));
+        }
+        
+        function median(values){
+            if(values.length ===0) return 0;
+          
+            values.sort(function(a,b){
+              return a-b;
+            });
+          
+            var half = Math.floor(values.length / 2);
+          
+            if (values.length % 2)
+              return values[half];
+          
+            return (values[half - 1] + values[half]) / 2.0;
+          }
+
+        function initAudio(data) {
+            var audioRequest = new XMLHttpRequest();
+            var dfd = jQuery.Deferred();
+
+            audioRequest.open("GET", URL.createObjectURL(data.files[0]), true);
+            audioRequest.responseType = "arraybuffer";
+            audioRequest.onload = function () {
+                audioCtx.decodeAudioData(audioRequest.response,
+                        function (buffer) {
+                            dfd.resolve(buffer);
+                        });
+            }
+            audioRequest.send();
+
+            return dfd.promise();
+        }
+
+        var sampleRate;
+
+        function makeAudio(buffer){
+            var offAudioCtx = new OfflineAudioContext(1, buffer.length, buffer.sampleRate)
+            sampleRate = buffer.sampleRate
+            AudioSourceNode = offAudioCtx.createBufferSource()
+            AudioSourceNode.buffer = buffer;
+        
+            PlaySourceNode = audioCtx.createBufferSource()
+            PlaySourceNode.buffer = buffer;
+            PlaySourceNode.connect(audioCtx.destination);
+        
+            var lowfilter = offAudioCtx.createBiquadFilter()
+            lowfilter.type = "lowpass";
+            // filter.gain.value  = 20;
+            lowfilter.frequency.value = 150;
+            // filter.Q.value = 15;
+        
+            var highfilter = offAudioCtx.createBiquadFilter()
+            highfilter.type = "highpass"
+            highfilter.frequency.value=1000
+        
+            AudioSourceNode.connect(lowfilter)
+            lowfilter.connect(offAudioCtx.destination)
+        
+            AudioSourceNode.start();
+            offAudioCtx.startRendering();
+        
+            var result;
+            var peaks= [];
+            offAudioCtx.oncomplete = function(e){
+                result = e.renderedBuffer;
+                console.log(result.duration)
+                console.log(result);
+                var buffArr = e.renderedBuffer.getChannelData(0);
+                var avg = 0;
+                // for(var i = 0; i<buffArr.length; i++){
+                //     avg+=buffArr[i];
+                // }
+                // avg = avg/buffArr.length;
+                var totalLength = buffArr.length
+                var interval = 0.5
+                var skip = result.sampleRate * interval
+                var sortArr;
+        
+                for(var i = skip; i<totalLength-1; i+=skip){
+                    var split = buffArr.slice(i-skip,i-1)
+                    console.log(skip)
+        
+                    sortArr = [... split];
+                    var med = median(sortArr);
+        
+                    // console.log(normalize(med));
+                    var temppeaks = generatePeaksArray(split,normalize(med)+0.01,i-skip)
+                    peaks = [].concat(peaks,temppeaks)
+        
+                    console.log(i +" / "+ totalLength)
+                    if(i+skip>=totalLength) skip=(totalLength-1)-i
+                }
+        
+                console.log(peaks)
+                threesonance.peakData = peaks;
+                threesonance.AudioNode = new AudioContext();
+                threesonance.AudioNode = PlaySourceNode;
+                // PlaySourceNode.start(0);
+                threesonance.init()
+
+            }
+        }
+    }
+
+    musicLoad()
