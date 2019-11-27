@@ -176,6 +176,12 @@
         //     cube2.scale.set(1,1,1);
             gltf.scene.position.set(0,-1,3.2);
             threesonance.scene.add(gltf.scene);
+            
+        });
+        const loader2 = new THREE.TextureLoader();
+        loader2.load('./world/sky.jpg' , function(texture)
+        {
+         threesonance.scene.background = texture;  
         });
     }
 
@@ -187,8 +193,22 @@
             if (key[i]) {
                 threesonance.button[i].position.y = 0
                 threesonance.button[i].children[1].intensity = 10
-                threesonance.grids[i].material.emissive.setHex(0xFF0000);
                 threesonance.grids[i].material.opacity = 1;
+                switch (i) {
+                    case 0:
+                    case 2:
+                    case 4:
+                    case 6:
+                        threesonance.grids[i].material.emissive.setHex(0x00ffff);
+                        break
+                    case 1:
+                    case 5:
+                        threesonance.grids[i].material.emissive.setHex(0xFFFF00);
+                        break
+                    default:
+                        threesonance.grids[i].material.emissive.setHex(0xFF00FF);
+                        break
+                }
             }
             else {
                 threesonance.button[i].position.y = .2
