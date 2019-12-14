@@ -2,6 +2,7 @@ var threesonance = {}
 const width = window.innerWidth
 const height = window.innerHeight
 const camSpeed = -0.01
+const eps = 75
 
 // GRID MATERIAL
 var material_1 = new THREE.MeshPhongMaterial({ 
@@ -10,7 +11,7 @@ var material_1 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_2 = new THREE.MeshPhongMaterial({ 
@@ -19,7 +20,7 @@ var material_2 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_3 = new THREE.MeshPhongMaterial({ 
@@ -28,7 +29,7 @@ var material_3 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_4 = new THREE.MeshPhongMaterial({ 
@@ -37,7 +38,7 @@ var material_4 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_5 = new THREE.MeshPhongMaterial({ 
@@ -46,7 +47,7 @@ var material_5 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_6 = new THREE.MeshPhongMaterial({ 
@@ -55,7 +56,7 @@ var material_6 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 var material_7 = new THREE.MeshPhongMaterial({ 
@@ -64,7 +65,7 @@ var material_7 = new THREE.MeshPhongMaterial({
     specular: 0x111111, 
     shininess: 143, 
     transparent: true, 
-    opacity: 0.3,
+    opacity: 0.5,
     side: THREE.DoubleSide
 });
 
@@ -93,7 +94,9 @@ const grid = new THREE.PlaneGeometry(0.88, 10000, 10);
 var key = []
 var font = undefined
 var current = undefined
-var materialGrid = [];
+var songStart = undefined
+var materialGrid = []
+var score = 0, streak = 0
 
 materialGrid.push(material_1);
 materialGrid.push(material_2);
@@ -105,20 +108,39 @@ materialGrid.push(material_7);
 
 const onKeyDown = event => {
     if (event.code == 'KeyS') {
-        key[0] = true;
+        key[0] = true
+        threesonance.checkHit(0)
     }
-    if (event.code == 'KeyD') key[1] = true
-    if (event.code == 'KeyF') key[2] = true
-    if (event.code == 'Space') key[3] = true
-    if (event.code == 'KeyJ') key[4] = true
-    if (event.code == 'KeyK') key[5] = true
-    if (event.code == 'KeyL') key[6] = true
-    if (event.code == 'ArrowDown') {
-        threesonance.camera.position.y -= .1
+    if (event.code == 'KeyD') {
+        key[1] = true
+        threesonance.checkHit(1)
     }
-    if (event.code == 'ArrowUp') {
-        threesonance.camera.position.y += .1
+    if (event.code == 'KeyF') {
+        key[2] = true
+        threesonance.checkHit(2)
     }
+    if (event.code == 'Space') {
+        key[3] = true
+        threesonance.checkHit(3)
+    }
+    if (event.code == 'KeyJ') {
+        key[4] = true
+        threesonance.checkHit(4)
+    }
+    if (event.code == 'KeyK') {
+        key[5] = true
+        threesonance.checkHit(5)
+    }
+    if (event.code == 'KeyL') {
+        key[6] = true
+        threesonance.checkHit(6)
+    }
+    // if (event.code == 'ArrowDown') {
+    //     threesonance.camera.position.y -= .1
+    // }
+    // if (event.code == 'ArrowUp') {
+    //     threesonance.camera.position.y += .1
+    // }
 }
 
 const onKeyUp = event => {
@@ -176,12 +198,13 @@ threesonance.initWorld = () => {
     //     cube2.scale.set(1,1,1);
         gltf.scene.position.set(0,-1,3.2);
         threesonance.scene.add(gltf.scene);
-        
+        threesonance.renderer.render(threesonance.scene, threesonance.camera)
     });
     const loader2 = new THREE.TextureLoader();
     loader2.load('./world/sky.jpg' , function(texture)
     {
-        threesonance.scene.background = texture;  
+        threesonance.scene.background = texture;
+        threesonance.renderer.render(threesonance.scene, threesonance.camera)
     });
 }
 
@@ -190,7 +213,6 @@ threesonance.moveUI = () => {
     var delta = temp - current
     var speed = camSpeed*delta
     threesonance.camera.position.z += speed
-    threesonance.score.position.z += speed
     for (let i = 0; i < threesonance.button.length; i++) {
         threesonance.button[i].position.z += speed
         if (key[i]) {
@@ -225,10 +247,8 @@ threesonance.moveUI = () => {
 }
 
 threesonance.fade = () => {
-    for (var i = 0;i<threesonance.lorong.children.length;i++) {
-        if (threesonance.lorong.children[i].intensity > 0)
-            threesonance.lorong.children[i].intensity -= 5
-    }
+    if (threesonance.spotLight3.intensity > 0)
+        threesonance.spotLight3.intensity -= 5
 }
 
 threesonance.resonance = () => {
@@ -241,24 +261,123 @@ threesonance.resonance = () => {
     }
 }
 
+threesonance.checkMiss = () => {
+    var time = new Date() - songStart
+    for (var i = 0;i<7;i++) {
+        if (time>threesonance.noteTime[i][0]*1000+2*eps) {
+            threesonance.spotLight3.color.setHex(0xFF00FF)
+            threesonance.spotLight3.intensity = 100
+            threesonance.scene.remove(threesonance.notes[i][0])
+            threesonance.notes[i].shift()
+            threesonance.noteTime[i].shift()
+            streak = 0
+            threesonance.refreshScore()
+            console.log('miss!')
+        }
+    }
+}
+
+threesonance.checkHit = (lane) => {
+    var time = new Date() - songStart
+    if (time<threesonance.noteTime[lane][0]*1000+eps && time>threesonance.noteTime[lane][0]*1000-eps) {
+        threesonance.spotLight3.color.setHex(0x00ffff)
+        threesonance.spotLight3.intensity = 100
+        threesonance.scene.remove(threesonance.notes[lane][0])
+        threesonance.notes[lane].shift()
+        threesonance.noteTime[lane].shift()
+        if (streak > 0)
+            score += (200*streak)
+        else score += 200
+        streak++
+        threesonance.refreshScore()
+        console.log('perfect!')
+    }
+    else if (time<threesonance.noteTime[lane][0]*1000+2*eps && time>threesonance.noteTime[lane][0]*1000+eps) {
+        threesonance.spotLight3.color.setHex(0xffff0)
+        threesonance.spotLight3.intensity = 100
+        threesonance.scene.remove(threesonance.notes[lane][0])
+        threesonance.notes[lane].shift()
+        threesonance.noteTime[lane].shift()
+        if (streak > 0)
+            score += (100*streak)
+        else score += 100
+        streak++
+        threesonance.refreshScore()
+        console.log('late!')
+    }
+    else if (time<threesonance.noteTime[lane][0]*1000-eps && time>threesonance.noteTime[lane][0]*1000-2*eps) {
+        threesonance.spotLight3.color.setHex(0xffff00)
+        threesonance.spotLight3.intensity = 100
+        threesonance.scene.remove(threesonance.notes[lane][0])
+        threesonance.notes[lane].shift()
+        threesonance.noteTime[lane].shift()
+        if (streak > 0)
+            score += (100*streak)
+        else score += 100
+        streak++
+        threesonance.refreshScore()
+        console.log('early!')
+    }
+}
+
+threesonance.refreshScore = () => {
+    jQuery('#score').html('Score: '+score+'<br>Streak: '+streak+'x')
+}
+
 threesonance.initNotes = () => {
     var arr = []
     var peaks = threesonance.peakData
-    for (var i = 0;i<peaks.length;i++) {
-        var mesh = new THREE.Mesh(buttonGeometry, material)
-
-        mesh.position.set(-3+Math.floor(Math.random()*6), .2, 11.5+(peaks[i][1])*camSpeed*1000)
-        // console.log(mesh.position.z)
-        arr.push(mesh)
+    threesonance.noteTime = []
+    for (var i =0;i<7;i++) {
+        arr.push([])
+        threesonance.noteTime.push([])
     }
-    return arr
+    for (var i = 0;i<peaks.length;i++) {
+        var noteMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.0,
+            metalness: 0.5,
+            reflectivity: 1.0,
+            side: THREE.DoubleSide
+        })
+        var x = Math.floor(Math.random()*7)
+        switch (x) {
+            case 0:
+                case 2:
+                case 4:
+                case 6:
+                    noteMaterial.emissive.setHex(0x00ffff);
+                    noteMaterial.color.setHex(0x00ffff);
+                    break
+                case 1:
+                case 5:
+                    noteMaterial.emissive.setHex(0xFFFF00);
+                    noteMaterial.color.setHex(0xFFFF00);
+                    break
+                default:
+                    noteMaterial.emissive.setHex(0xFF00FF);
+                    noteMaterial.color.setHex(0xFF00FF);
+                    break
+        }
+        var mesh = new THREE.Mesh(buttonGeometry, noteMaterial)
+        mesh.position.set(-3+x, .2, 12.6+(peaks[i][1]+2)*camSpeed*1000)
+        // console.log(mesh.position.z)
+        arr[x].push(mesh)
+        threesonance.noteTime[x].push(peaks[i][1])
+    }
+    threesonance.notes = arr
+    for (let j = 0;j<7;j++) {    
+        threesonance.scene.add(...threesonance.notes[j])
+    }
+    threesonance.renderer.render(threesonance.scene, threesonance.camera)
 }
 
 threesonance.anim = () => {
     requestAnimationFrame(threesonance.anim)
     threesonance.moveUI()
     // threesonance.resonance()
-    // threesonance.fade()
+    threesonance.fade()
+    threesonance.checkMiss()
     threesonance.renderer.render(threesonance.scene, threesonance.camera)
 }
 
@@ -282,7 +401,7 @@ threesonance.init = () => {
 
     threesonance.spotLight1 = new THREE.SpotLight( 0xFF7F00 )
     threesonance.spotLight2 = new THREE.SpotLight( 0x7f00dc )
-    threesonance.spotLight3 = new THREE.SpotLight( 0x7F00FF )
+    threesonance.spotLight3 = new THREE.SpotLight( 0xFF0000 )
 
     threesonance.spotLight1.intensity = 10  
     threesonance.spotLight1.angle = 9
@@ -290,55 +409,28 @@ threesonance.init = () => {
     threesonance.spotLight2.intensity = 100
     threesonance.spotLight2.angle = 9   
 
+    threesonance.spotLight3.intensity = 0
+    threesonance.spotLight3.angle = Math.PI
+
     threesonance.spotLight1.position.set( 0, .4, -1000 )
     threesonance.spotLight2.position.set( 0, 0, 100 )
-    threesonance.spotLight3.position.set( 1, 4, 4 )
+    threesonance.spotLight3.position.set( 0, 2.25, 15 )
 
-    threesonance.lightHelper1 = new THREE.SpotLightHelper( threesonance.spotLight1 )
-    threesonance.lightHelper2 = new THREE.SpotLightHelper( threesonance.spotLight2 )
-    threesonance.lightHelper3 = new THREE.SpotLightHelper( threesonance.spotLight3 )
-                
+    threesonance.camera.add(threesonance.spotLight3)
     
     threesonance.renderer.setSize(width, height)
     threesonance.renderer.setPixelRatio(devicePixelRatio)
     document.body.appendChild(threesonance.renderer.domElement)
     threesonance.initWorld()
     threesonance.grids = threesonance.initGrid()
-    for (let i = 0; i < threesonance.grids.length; i++) {
-        threesonance.scene.add(threesonance.grids[i])
-    }
+    threesonance.scene.add(...threesonance.grids)
     threesonance.button = threesonance.initButton()
-    for (let i = 0; i < threesonance.button.length; i++) {
-        threesonance.scene.add(threesonance.button[i])
-    }
-    threesonance.notes = threesonance.initNotes()
-    for (let i = 0; i < threesonance.notes.length; i++) {
-        threesonance.scene.add(threesonance.notes[i])
-    }
+    threesonance.scene.add(...threesonance.button)
     threesonance.scene.add(threesonance.spotLight1)
     threesonance.scene.add(threesonance.spotLight2)
-    // threesonance.scene.add(threesonance.spotLight3)
-    threesonance.scene.add(lightHelper1,lightHelper2,lightHelper3)
+    threesonance.scene.add(threesonance.spotLight3)
     threesonance.scene.add(threesonance.camera)
-    var loader = new THREE.FontLoader()
-    loader.load( 'font/droid_sans_regular.typeface.json', res => {
-        font = res
-        var scoreGeometry = new THREE.TextGeometry( 'Score: 0', {
-            font: font,
-            size: .5,
-            height: .025,
-            curveSegments: 5,
-            bevelEnabled: false,
-        } )
-        threesonance.score = new THREE.Mesh(scoreGeometry, material)
-        threesonance.score.position.set(-9, 6, 10)
-        threesonance.scene.add(threesonance.score)
-        // threesonance.renderer.render(threesonance.scene, threesonance.camera)
-        current = new Date()
-        threesonance.renderer.render(threesonance.scene, threesonance.camera)
-        threesonance.AudioNode.start(0)
-        threesonance.anim()
-    } )
+    threesonance.renderer.render(threesonance.scene, threesonance.camera)
 }
 //FILE LOAD
 
@@ -348,6 +440,7 @@ function musicLoad(){
     var PlaySourceNode = null;
     var audioCtx = new AudioContext()
 
+    threesonance.init()
 
     jQuery('#__drop').on('drop', function(e){
         e.stopPropagation();
@@ -447,7 +540,7 @@ function musicLoad(){
     
         var result;
         var peaks= [];
-        offAudioCtx.oncomplete = function(e){
+        offAudioCtx.oncomplete = async function(e){
             result = e.renderedBuffer;
             // console.log(result.duration)
             // console.log(result);
@@ -482,10 +575,18 @@ function musicLoad(){
             threesonance.AudioNode = new AudioContext();
             threesonance.AudioNode = PlaySourceNode;
             // PlaySourceNode.start(0);
-            threesonance.init()
-
+            threesonance.initNotes()
+            current = new Date()
+            threesonance.anim()
+            await sleep(2000)
+            songStart = new Date()
+            threesonance.AudioNode.start(0)
         }
     }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 musicLoad()
