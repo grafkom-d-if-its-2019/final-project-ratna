@@ -360,10 +360,10 @@ threesonance.initNotes = () => {
                     break
         }
         var mesh = new THREE.Mesh(buttonGeometry, noteMaterial)
-        mesh.position.set(-3+x, .2, 12.6+(peaks[i][1]+2)*camSpeed*1000)
+        mesh.position.set(-3+x, .2, 12.6+(peaks[i]+2)*camSpeed*1000)
         // console.log(mesh.position.z)
         arr[x].push(mesh)
-        threesonance.noteTime[x].push(peaks[i][1])
+        threesonance.noteTime[x].push(peaks[i])
     }
     threesonance.notes = arr
     for (let j = 0;j<7;j++) {    
@@ -447,17 +447,42 @@ function musicLoad(){
         e.preventDefault();
         var data = e.originalEvent.dataTransfer;
         var file = data.files[0];
+        
         var file_name = file.name
         console.log(file_name);
-        jQuery.when(initAudio(data)).done(function(b){
-            jQuery('#__drop').css('display', 'none')
-            makeAudio(b);
-        });
+        uploadFile(file,data)
     });
 
     jQuery(document).on('dragover', function(){
         return false;
     });
+
+    function uploadFile(file,data) {
+        var url = 'http://127.0.0.1:3000/generate'
+        var xhr = new XMLHttpRequest()
+        var formData = new FormData()
+        xhr.open('POST', url, true)
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+      
+        xhr.addEventListener('readystatechange', function(e) {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            threesonance.peakData = JSON.parse(xhr.responseText).beats
+            console.log(threesonance.peakData)
+            jQuery.when(initAudio(file)).done(function(b){
+                jQuery('#__drop').css('display', 'none')
+                makeAudio(b);
+            });
+          }
+          else if (xhr.readyState == 4 && xhr.status != 200) {
+            console.log('Error!')
+            console.log(xhr.responseText)
+          }
+        })
+      
+        formData.append('upload_preset', 'ujpu6gyk')
+        formData.append('song', file)
+        xhr.send(formData)
+      }
 
     function generatePeaksArray(buffer, threshold, bufferstart){
         var result = []
@@ -497,7 +522,7 @@ function musicLoad(){
         var audioRequest = new XMLHttpRequest();
         var dfd = jQuery.Deferred();
 
-        audioRequest.open("GET", URL.createObjectURL(data.files[0]), true);
+        audioRequest.open("GET", URL.createObjectURL(data), true);
         audioRequest.responseType = "arraybuffer";
         audioRequest.onload = function () {
             audioCtx.decodeAudioData(audioRequest.response,
@@ -571,7 +596,6 @@ function musicLoad(){
             }
     
             // console.log(peaks)
-            threesonance.peakData = peaks;
             threesonance.AudioNode = new AudioContext();
             threesonance.AudioNode = PlaySourceNode;
             // PlaySourceNode.start(0);
