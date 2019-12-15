@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const _ = require('lodash');
 const fs = require('fs');
+const md5File = require('md5-file');
 
 
 const app = express()
@@ -28,9 +29,13 @@ app.post('/generate', async (req, res)=>{
             });
         } else {
             let song = req.files.song;
-            
+            var mp3hash;
             console.log('Hey!')
             song.mv('./infer/data/unprocessed.mp3');
+            md5File('./infer/data/unprocessed.mp3',(err,hash)=>{
+                console.log(hash);
+                mp3hash = hash;
+            })
             const { spawn } = require('child_process');
             const infer = spawn('cmd.exe', ['/c','infer\\program\\infer.bat']);
 
@@ -56,7 +61,8 @@ app.post('/generate', async (req, res)=>{
                         mimetype: song.mimetype,
                         size: song.size
                     },
-                    beats: json
+                    beats: json,
+                    hash: mp3hash
                 });
             });
 

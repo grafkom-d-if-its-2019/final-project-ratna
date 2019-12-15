@@ -3,6 +3,7 @@ const width = window.innerWidth
 const height = window.innerHeight
 const camSpeed = -0.01
 const eps = 75
+var rng
 
 // GRID MATERIAL
 var material_1 = new THREE.MeshPhongMaterial({ 
@@ -340,7 +341,7 @@ threesonance.initNotes = () => {
             reflectivity: 1.0,
             side: THREE.DoubleSide
         })
-        var x = Math.floor(Math.random()*7)
+        var x = Math.floor(rng()*7)
         switch (x) {
             case 0:
                 case 2:
@@ -467,7 +468,8 @@ function musicLoad(){
         xhr.addEventListener('readystatechange', function(e) {
           if (xhr.readyState == 4 && xhr.status == 200) {
             threesonance.peakData = JSON.parse(xhr.responseText).beats
-            console.log(threesonance.peakData)
+            rng = new Math.seedrandom(JSON.parse(xhr.responseText).hash) 
+            console.log(JSON.parse(xhr.responseText).hash)
             jQuery.when(initAudio(file)).done(function(b){
                 jQuery('#__drop').css('display', 'none')
                 makeAudio(b);
@@ -540,61 +542,61 @@ function musicLoad(){
     function makeAudio(buffer){
         var offAudioCtx = new OfflineAudioContext(1, buffer.length, buffer.sampleRate)
         sampleRate = buffer.sampleRate
-        AudioSourceNode = offAudioCtx.createBufferSource()
-        AudioSourceNode.buffer = buffer;
+        // AudioSourceNode = offAudioCtx.createBufferSource()
+        // AudioSourceNode.buffer = buffer;
     
         PlaySourceNode = audioCtx.createBufferSource()
         PlaySourceNode.buffer = buffer;
         PlaySourceNode.connect(audioCtx.destination);
     
-        var lowfilter = offAudioCtx.createBiquadFilter()
-        lowfilter.type = "lowpass";
-        // filter.gain.value  = 20;
-        lowfilter.frequency.value = 150;
-        // filter.Q.value = 15;
+        // var lowfilter = offAudioCtx.createBiquadFilter()
+        // lowfilter.type = "lowpass";
+        // // filter.gain.value  = 20;
+        // lowfilter.frequency.value = 150;
+        // // filter.Q.value = 15;
     
-        var highfilter = offAudioCtx.createBiquadFilter()
-        highfilter.type = "highpass"
-        highfilter.frequency.value=1000
+        // var highfilter = offAudioCtx.createBiquadFilter()
+        // highfilter.type = "highpass"
+        // highfilter.frequency.value=1000
     
-        AudioSourceNode.connect(lowfilter)
-        lowfilter.connect(offAudioCtx.destination)
+        // AudioSourceNode.connect(lowfilter)
+        // lowfilter.connect(offAudioCtx.destination)
     
-        AudioSourceNode.start();
-        offAudioCtx.startRendering();
+        // AudioSourceNode.start();
+        // offAudioCtx.startRendering();
     
-        var result;
-        var peaks= [];
-        offAudioCtx.oncomplete = async function(e){
-            result = e.renderedBuffer;
-            // console.log(result.duration)
-            // console.log(result);
-            var buffArr = e.renderedBuffer.getChannelData(0);
-            var avg = 0;
-            // for(var i = 0; i<buffArr.length; i++){
-            //     avg+=buffArr[i];
-            // }
-            // avg = avg/buffArr.length;
-            var totalLength = buffArr.length
-            var interval = 0.5
-            var skip = result.sampleRate * interval
-            var sortArr;
+        // var result;
+        // var peaks= [];
+        // offAudioCtx.oncomplete = async function(e){
+        //     result = e.renderedBuffer;
+        //     // console.log(result.duration)
+        //     // console.log(result);
+        //     var buffArr = e.renderedBuffer.getChannelData(0);
+        //     var avg = 0;
+        //     // for(var i = 0; i<buffArr.length; i++){
+        //     //     avg+=buffArr[i];
+        //     // }
+        //     // avg = avg/buffArr.length;
+        //     var totalLength = buffArr.length
+        //     var interval = 0.5
+        //     var skip = result.sampleRate * interval
+        //     var sortArr;
     
-            for(var i = skip; i<totalLength-1; i+=skip){
-                var split = buffArr.slice(i-skip,i-1)
-                // console.log(skip)
+        //     for(var i = skip; i<totalLength-1; i+=skip){
+        //         var split = buffArr.slice(i-skip,i-1)
+        //         // console.log(skip)
     
-                sortArr = [... split];
-                var med = median(sortArr);
+        //         sortArr = [... split];
+        //         var med = median(sortArr);
     
-                // console.log(normalize(med));
-                var temppeaks = generatePeaksArray(split,normalize(med)+0.01,i-skip)
-                peaks = [].concat(peaks,temppeaks)
+        //         // console.log(normalize(med));
+        //         var temppeaks = generatePeaksArray(split,normalize(med)+0.01,i-skip)
+        //         peaks = [].concat(peaks,temppeaks)
     
-                // console.log(i +" / "+ totalLength)
-                if(i+skip>=totalLength) skip=(totalLength-1)-i
-            }
-    
+        //         // console.log(i +" / "+ totalLength)
+        //         if(i+skip>=totalLength) skip=(totalLength-1)-i
+        //     }
+        async function start(){
             // console.log(peaks)
             threesonance.AudioNode = new AudioContext();
             threesonance.AudioNode = PlaySourceNode;
@@ -606,6 +608,7 @@ function musicLoad(){
             songStart = new Date()
             threesonance.AudioNode.start(0)
         }
+        start()
     }
 }
 

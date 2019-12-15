@@ -17,6 +17,7 @@
     "express-fileupload": "^1.1.6",
     "fs": "0.0.1-security",
     "lodash": "^4.17.15",
+    "md5-file": "^4.0.0",
     "morgan": "^1.9.1"
   }
 }

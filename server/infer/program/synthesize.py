@@ -81,25 +81,25 @@ def by_librosa_detection2(inference, song):
 def by_librosa_detection3(inferencedon, inferenceka, song):
     """detects notes distinguishing don and ka"""
     inferencedon = smooth(inferencedon, 5)
-    inferenceka = smooth(inferenceka, 5)
+    # inferenceka = smooth(inferenceka, 5)
     print(peak_pick(inferencedon, 1, 2, 4, 5, 0.05, 3)+7)
     timestampdon = (peak_pick(inferencedon, 1, 2, 4, 5,
                               0.05, 3)+7)
-    timestampka = (peak_pick(inferenceka, 1, 2, 4, 5,
-                             0.05, 3)+7)
-    song.timestampdon = timestampdon[np.where(
-        inferencedon[timestampdon] > inferenceka[timestampdon])]
-    song.timestamp=song.timestampdon*512/song.samplerate
-    print(len(song.timestamp))
+    # timestampka = (peak_pick(inferenceka, 1, 2, 4, 5,
+    #                          0.05, 3)+7)
+    # song.timestampdon = timestampdon[np.where(
+    #     inferencedon[timestampdon] > inferenceka[timestampdon])]
+    # song.timestamp=song.timestampdon*512/song.samplerate
+    # print(len(song.timestamp))
     res = np.array(timestampdon*512/song.samplerate)
-    print(res)
+    # print(res)
     # song.synthesize(diff='don')
-    song.timestampka = timestampka[np.where(
-        inferenceka[timestampka] > inferencedon[timestampka])]
-    song.timestamp=song.timestampka*512/song.samplerate
-    print(len(song.timestamp))
-    res2 = np.array(song.timestamp)
-    print(res2)
+    # song.timestampka = timestampka[np.where(
+    #     inferenceka[timestampka] > inferencedon[timestampka])]
+    # song.timestamp=song.timestampka*512/song.samplerate
+    # print(len(song.timestamp))
+    # res2 = np.array(song.timestamp)
+    # print(res2)
     # res = np.concatenate((res,res2))
     # res = np.sort(res)
     
@@ -176,8 +176,8 @@ if __name__ == "__main__":
     if sys.argv[1] == '1':
         with open('../data/inference.pickle' + 'don', mode='rb') as f:
             inferencedon = pickle.load(f)
-        with open('../data/inference.pickle' + 'ka', mode='rb') as f:
-            inferenceka = pickle.load(f)
+        # with open('../data/inference.pickle' + 'ka', mode='rb') as f:
+        #     inferenceka = pickle.load(f)
 
     # by_librosa_detection2(inference, song)
     # create_tja("../data/kondo/9413.tja", song.timestampboth)
