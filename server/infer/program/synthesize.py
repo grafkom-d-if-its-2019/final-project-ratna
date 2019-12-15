@@ -78,7 +78,7 @@ def by_librosa_detection2(inference, song):
     song.save("../data/inferredmusic.wav")
 
 
-def by_librosa_detection3(inferencedon, inferenceka, song):
+def by_librosa_detection3(inferencedon, song):
     """detects notes distinguishing don and ka"""
     inferencedon = smooth(inferencedon, 5)
     # inferenceka = smooth(inferenceka, 5)
@@ -182,5 +182,5 @@ if __name__ == "__main__":
     # by_librosa_detection2(inference, song)
     # create_tja("../data/kondo/9413.tja", song.timestampboth)
 
-    by_librosa_detection3(inferencedon, inferenceka, song)
+    by_librosa_detection3(inferencedon, song)
     # create_tja("../data/kondo/9413.tja",song, song.timestampdon, song.timestampka)

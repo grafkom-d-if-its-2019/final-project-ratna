@@ -470,6 +470,7 @@ function musicLoad(){
             threesonance.peakData = JSON.parse(xhr.responseText).beats
             rng = new Math.seedrandom(JSON.parse(xhr.responseText).hash) 
             console.log(JSON.parse(xhr.responseText).hash)
+            console.log(JSON.parse(xhr.responseText).beats)
             jQuery.when(initAudio(file)).done(function(b){
                 jQuery('#__drop').css('display', 'none')
                 makeAudio(b);
