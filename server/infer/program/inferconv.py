@@ -4,7 +4,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 # infer using trained CNN model.
 if __name__ == "__main__":
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     net = convNet()
     print(net)
     net = net.to(device)

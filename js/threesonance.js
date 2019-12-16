@@ -1,7 +1,7 @@
 var threesonance = {}
 const width = window.innerWidth
 const height = window.innerHeight
-const camSpeed = -0.01
+var camSpeed = -0.01
 const eps = 75
 var rng
 
@@ -96,8 +96,14 @@ var key = []
 var font = undefined
 var current = undefined
 var songStart = undefined
+var songLength = undefined
 var materialGrid = []
-var score = 0, streak = 0
+var score = 0, streak = 0, perfect = 0, miss = 0, late = 0, early = 0
+var noteCount = undefined
+var animID = undefined
+var maxStreak = 0
+var hash = undefined
+var highscore = 0
 
 materialGrid.push(material_1);
 materialGrid.push(material_2);
@@ -164,7 +170,7 @@ threesonance.initButton = () => {
     var arr = []
     for (let i = 0; i < 7; i++) {
         var mesh = new THREE.Mesh(buttonGeometry, material)
-        mesh.position.set(-3+i, .2, 12.6)
+        mesh.position.set(-3+i, .2, 7.6)
         var light = new THREE.PointLight(0xffffff, 1, 1)
         light.position.set(0, .4, 0)
         var glow = new THREE.PointLight(0x00ffff, 0, 1)
@@ -192,19 +198,13 @@ threesonance.initGrid = () => {
     return arr
 }
 
-threesonance.initWorld = () => {
+threesonance.initWorld = (i) => {
     let loader = new THREE.GLTFLoader();
-    loader.load('./world/map.glb', function(gltf){
+    loader.load('./world/map_cut.glb', function(gltf){
         var cube2 = gltf.scene.children[0];
     //     cube2.scale.set(1,1,1);
-        gltf.scene.position.set(0,-1,3.2);
+        gltf.scene.position.set(0,-1,3.2-(i*32));
         threesonance.scene.add(gltf.scene);
-        threesonance.renderer.render(threesonance.scene, threesonance.camera)
-    });
-    const loader2 = new THREE.TextureLoader();
-    loader2.load('./world/sky.jpg' , function(texture)
-    {
-        threesonance.scene.background = texture;
         threesonance.renderer.render(threesonance.scene, threesonance.camera)
     });
 }
@@ -214,6 +214,7 @@ threesonance.moveUI = () => {
     var delta = temp - current
     var speed = camSpeed*delta
     threesonance.camera.position.z += speed
+    threesonance.spotLight1.position.z += speed
     for (let i = 0; i < threesonance.button.length; i++) {
         threesonance.button[i].position.z += speed
         if (key[i]) {
@@ -238,10 +239,12 @@ threesonance.moveUI = () => {
         }
         else {
             threesonance.button[i].position.y = .2
+
             if (threesonance.button[i].children[1].intensity > 0)
                 threesonance.button[i].children[1].intensity -= .5
-                threesonance.grids[i].material.emissive.setHex(0x000000);
-                threesonance.grids[i].material.opacity = 0.5;
+
+            threesonance.grids[i].material.emissive.setHex(0x000000);
+            threesonance.grids[i].material.opacity = 0.5;
         }
     }
     current = temp
@@ -262,6 +265,19 @@ threesonance.resonance = () => {
     }
 }
 
+threesonance.stop = () => {
+    var temp = new Date()
+    var delta = temp - current
+    var speed = camSpeed*delta
+    if (speed < -0.005) {
+        // console.log(speed)
+        camSpeed=camSpeed*0.96;
+    } else {
+        cancelAnimationFrame(animID)
+        // ui
+    }
+}
+
 threesonance.checkMiss = () => {
     var time = new Date() - songStart
     for (var i = 0;i<7;i++) {
@@ -272,6 +288,7 @@ threesonance.checkMiss = () => {
             threesonance.notes[i].shift()
             threesonance.noteTime[i].shift()
             streak = 0
+            miss++
             threesonance.refreshScore()
             console.log('miss!')
         }
@@ -281,15 +298,16 @@ threesonance.checkMiss = () => {
 threesonance.checkHit = (lane) => {
     var time = new Date() - songStart
     if (time<threesonance.noteTime[lane][0]*1000+eps && time>threesonance.noteTime[lane][0]*1000-eps) {
-        threesonance.spotLight3.color.setHex(0x00ffff)
+        threesonance.spotLight3.color.setHex(0x00ff00)
         threesonance.spotLight3.intensity = 100
         threesonance.scene.remove(threesonance.notes[lane][0])
         threesonance.notes[lane].shift()
         threesonance.noteTime[lane].shift()
         if (streak > 0)
-            score += (200*streak)
-        else score += 200
+            score += (2*streak)
+        else score += 2
         streak++
+        perfect++
         threesonance.refreshScore()
         console.log('perfect!')
     }
@@ -300,9 +318,10 @@ threesonance.checkHit = (lane) => {
         threesonance.notes[lane].shift()
         threesonance.noteTime[lane].shift()
         if (streak > 0)
-            score += (100*streak)
-        else score += 100
+            score += (1*streak)
+        else score += 1
         streak++
+        late++
         threesonance.refreshScore()
         console.log('late!')
     }
@@ -313,15 +332,19 @@ threesonance.checkHit = (lane) => {
         threesonance.notes[lane].shift()
         threesonance.noteTime[lane].shift()
         if (streak > 0)
-            score += (100*streak)
-        else score += 100
+            score += (1*streak)
+        else score += 1
         streak++
+        early++
         threesonance.refreshScore()
         console.log('early!')
     }
 }
 
 threesonance.refreshScore = () => {
+    if(maxStreak < streak){
+        maxStreak = streak
+    }
     jQuery('#score').html('Score: '+score+'<br>Streak: '+streak+'x')
 }
 
@@ -361,7 +384,7 @@ threesonance.initNotes = () => {
                     break
         }
         var mesh = new THREE.Mesh(buttonGeometry, noteMaterial)
-        mesh.position.set(-3+x, .2, 12.6+(peaks[i]+2)*camSpeed*1000)
+        mesh.position.set(-3+x, .2, 7.6+(peaks[i]+2)*camSpeed*1000)
         // console.log(mesh.position.z)
         arr[x].push(mesh)
         threesonance.noteTime[x].push(peaks[i])
@@ -374,12 +397,43 @@ threesonance.initNotes = () => {
 }
 
 threesonance.anim = () => {
-    requestAnimationFrame(threesonance.anim)
-    threesonance.moveUI()
-    // threesonance.resonance()
-    threesonance.fade()
-    threesonance.checkMiss()
-    threesonance.renderer.render(threesonance.scene, threesonance.camera)
+    var progress = new Date() - songStart
+    if (progress/1000 > songLength+2) threesonance.stop()
+    if(progress/1000 > songLength+5) {
+        //show
+        threesonance.showScore()
+    }
+    else{
+        animID = requestAnimationFrame(threesonance.anim)
+        threesonance.moveUI()
+        // threesonance.resonance()
+        threesonance.fade()
+        threesonance.checkMiss()
+        threesonance.renderer.render(threesonance.scene, threesonance.camera)
+    }
+
+}
+
+threesonance.showScore = () => {
+    jQuery('#gameover').css('display', 'inline')
+    jQuery('#score2').html(score)
+    jQuery('#score').html('')
+    jQuery('#highscore').html('')
+    jQuery('#perfect').html(perfect)
+    jQuery('#early').html(early)
+    jQuery('#late').html(late)
+    jQuery('#miss').html(miss)
+    jQuery('#accuracy').html((((noteCount-miss)/noteCount)*100).toFixed(2))
+    jQuery('#maxStreak').html(maxStreak)
+    if(score>highscore) jQuery('#newhs').css('display','');
+    var url = 'http://10.151.32.76:3000/score'
+    var xhr = new XMLHttpRequest()
+    var formData = new FormData()
+    xhr.open('POST', url, true)
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+    formData.append('hash',hash)
+    formData.append('score',score)
+    xhr.send(formData);
 }
 
 threesonance.init = () => {
@@ -395,10 +449,18 @@ threesonance.init = () => {
         .1, 
         1000
     )
-    threesonance.camera.position.set(0, 2.25, 15)
+    threesonance.camera.position.set(0, 2.25, 10)
     threesonance.renderer = new THREE.WebGLRenderer({ 
         antialias: true
     })
+
+    const loader2 = new THREE.TextureLoader();
+    loader2.load('./world/Background2.png' , function(texture)
+    {
+        // texture.anisotropy = threesonance.renderer.getMaxAnisotropy();
+        threesonance.scene.background = texture;
+        threesonance.renderer.render(threesonance.scene, threesonance.camera)
+    });
 
     threesonance.spotLight1 = new THREE.SpotLight( 0xFF7F00 )
     threesonance.spotLight2 = new THREE.SpotLight( 0x7f00dc )
@@ -422,7 +484,6 @@ threesonance.init = () => {
     threesonance.renderer.setSize(width, height)
     threesonance.renderer.setPixelRatio(devicePixelRatio)
     document.body.appendChild(threesonance.renderer.domElement)
-    threesonance.initWorld()
     threesonance.grids = threesonance.initGrid()
     threesonance.scene.add(...threesonance.grids)
     threesonance.button = threesonance.initButton()
@@ -451,6 +512,7 @@ function musicLoad(){
         
         var file_name = file.name
         console.log(file_name);
+        jQuery('#loader').css('display', 'flex')
         uploadFile(file,data)
     });
 
@@ -459,7 +521,7 @@ function musicLoad(){
     });
 
     function uploadFile(file,data) {
-        var url = 'http://127.0.0.1:3000/generate'
+        var url = 'http://10.151.32.76:3000/generate'
         var xhr = new XMLHttpRequest()
         var formData = new FormData()
         xhr.open('POST', url, true)
@@ -468,11 +530,18 @@ function musicLoad(){
         xhr.addEventListener('readystatechange', function(e) {
           if (xhr.readyState == 4 && xhr.status == 200) {
             threesonance.peakData = JSON.parse(xhr.responseText).beats
+            noteCount = threesonance.peakData.length
             rng = new Math.seedrandom(JSON.parse(xhr.responseText).hash) 
+            hash = JSON.parse(xhr.responseText).hash
+            highscore = JSON.parse(xhr.responseText).highscore
             console.log(JSON.parse(xhr.responseText).hash)
-            console.log(JSON.parse(xhr.responseText).beats)
+            jQuery('#highscore').html('Highscore : '+highscore)
+            jQuery('#score').html("Score: 0 <br> Streak: 0x <br>")
+            // console.log(JSON.parse(xhr.responseText).hash)
+            // console.log(JSON.parse(xhr.responseText).beats)
             jQuery.when(initAudio(file)).done(function(b){
                 jQuery('#__drop').css('display', 'none')
+                jQuery('#loader').css('display', 'none')
                 makeAudio(b);
             });
           }
@@ -542,61 +611,16 @@ function musicLoad(){
 
     function makeAudio(buffer){
         var offAudioCtx = new OfflineAudioContext(1, buffer.length, buffer.sampleRate)
+        songLength = buffer.length/buffer.sampleRate
         sampleRate = buffer.sampleRate
-        // AudioSourceNode = offAudioCtx.createBufferSource()
-        // AudioSourceNode.buffer = buffer;
     
+        for(i=0;i<((( songLength * 10 )/32)+7); i++){
+            threesonance.initWorld(i)
+        }
+
         PlaySourceNode = audioCtx.createBufferSource()
         PlaySourceNode.buffer = buffer;
         PlaySourceNode.connect(audioCtx.destination);
-    
-        // var lowfilter = offAudioCtx.createBiquadFilter()
-        // lowfilter.type = "lowpass";
-        // // filter.gain.value  = 20;
-        // lowfilter.frequency.value = 150;
-        // // filter.Q.value = 15;
-    
-        // var highfilter = offAudioCtx.createBiquadFilter()
-        // highfilter.type = "highpass"
-        // highfilter.frequency.value=1000
-    
-        // AudioSourceNode.connect(lowfilter)
-        // lowfilter.connect(offAudioCtx.destination)
-    
-        // AudioSourceNode.start();
-        // offAudioCtx.startRendering();
-    
-        // var result;
-        // var peaks= [];
-        // offAudioCtx.oncomplete = async function(e){
-        //     result = e.renderedBuffer;
-        //     // console.log(result.duration)
-        //     // console.log(result);
-        //     var buffArr = e.renderedBuffer.getChannelData(0);
-        //     var avg = 0;
-        //     // for(var i = 0; i<buffArr.length; i++){
-        //     //     avg+=buffArr[i];
-        //     // }
-        //     // avg = avg/buffArr.length;
-        //     var totalLength = buffArr.length
-        //     var interval = 0.5
-        //     var skip = result.sampleRate * interval
-        //     var sortArr;
-    
-        //     for(var i = skip; i<totalLength-1; i+=skip){
-        //         var split = buffArr.slice(i-skip,i-1)
-        //         // console.log(skip)
-    
-        //         sortArr = [... split];
-        //         var med = median(sortArr);
-    
-        //         // console.log(normalize(med));
-        //         var temppeaks = generatePeaksArray(split,normalize(med)+0.01,i-skip)
-        //         peaks = [].concat(peaks,temppeaks)
-    
-        //         // console.log(i +" / "+ totalLength)
-        //         if(i+skip>=totalLength) skip=(totalLength-1)-i
-        //     }
         async function start(){
             // console.log(peaks)
             threesonance.AudioNode = new AudioContext();

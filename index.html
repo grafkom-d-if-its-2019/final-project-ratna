@@ -23,19 +23,235 @@
             top: 4%;
             left: 4%;
             z-index: 1000;
-            font-size: 42pt;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-size: 30pt;
+            /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
+            font-family: 'AlienEncounters';
             color: #ff00ff;
         }
+
+        #highscore {
+            position: absolute;
+            top: 12.5%;
+            left: 4%;
+            z-index: 1000;
+            font-size: 24pt;
+            /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; */
+            font-family: 'AlienEncounters';
+            color: #ff00ff;
+        }
+
+        .fill {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+        }
+        .fill img {
+            flex-shrink: 0;
+            width: 100%;
+            height: 100%
+        }
+        
+        .loader {
+            position: fixed;
+            width: 100px;
+            height: 300px;
+            margin: auto;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            display: inline-block;
+            vertical-align: middle;
+            z-index: 1002;
+        }
+
+        .loader-7 .line {
+            width: 10px;
+            position: absolute;
+            border-radius: 5px;
+            bottom: 0;
+            background: -webkit-gradient(linear, left top, left bottom, from(#ffff00), to(#ff00ff));
+            background: -webkit-linear-gradient(top, #ffff00, #ff00ff);
+            background: -o-linear-gradient(top, #ffff00, #ff00ff);
+            background: linear-gradient(to bottom, #ffff00, #ff00ff);
+        }
+
+        .loader-7 .line1 {
+            left: 0;
+            -webkit-animation: line-grow 0.5s ease alternate infinite;
+            animation: line-grow 0.5s ease alternate infinite;
+        }
+        
+        .loader-7 .line2 {
+            left: 20px;
+            -webkit-animation: line-grow 0.5s 0.2s ease alternate infinite;
+            animation: line-grow 0.5s 0.2s ease alternate infinite;
+        }
+        
+        .loader-7 .line3 {
+            left: 40px;
+            -webkit-animation: line-grow 0.5s 0.4s ease alternate infinite;
+            animation: line-grow 0.5s 0.4s ease alternate infinite;
+        }
+        
+        .loader-7 .line4 {
+            left: 60px;
+            -webkit-animation: line-grow 0.5s 0.6s ease alternate infinite;
+            animation: line-grow 0.5s 0.6s ease alternate infinite;
+        }
+        
+        .loader-7 .line5 {
+            left: 80px;
+            -webkit-animation: line-grow 0.5s 0.8s ease alternate infinite;
+            animation: line-grow 0.5s 0.8s ease alternate infinite;
+        }
+
+        
+        @-webkit-keyframes line-grow {
+            0% {
+                height: 0;
+            }
+            100% {
+                height: 75%;
+            }
+        }
+        
+        @keyframes line-grow {
+            0% {
+                height: 0;
+            }
+            100% {
+                height: 75%;
+            }
+        }
+
+        #gameover {
+            font-size: xx-large;
+            color: #ff00ff;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+        }
+
+        .score-table {
+            /* border: 5px solid rgba(206, 4, 247, 0.459); */
+            align-self: center;
+            margin:auto;
+            background-color: rgba(0, 0, 0, 0.452);
+            -webkit-animation: glow-table 1s ease-in-out infinite alternate;
+            -moz-animation: glow-table 1s ease-in-out infinite alternate;
+            animation: glow-table 1s ease-in-out infinite alternate;  
+        }
+
+        .score-table td{
+            /* border: 2px solid rgba(187, 21, 238, 0.726); */
+            outline: none;
+            font-family: 'AlienEncounters';
+            /* border-color: #f8fc1f9d; */
+            /* box-shadow: 0 0 30px #fffc5aa8; */
+           
+            
+        }
+
+        @-webkit-keyframes glow {
+            from {
+                text-shadow: 0 0 10px #d17600, 0 0 20px #d17600, 0 0 30px #e904ddb0, 0 0 40px #e904ddb0, 0 0 50px #e904ddb0, 0 0 60px #e904ddb0, 0 0 70px #e904ddb0;
+            }
+            to {
+                text-shadow: 0 0 20px #ff9f22, 0 0 30px #ff9f22, 0 0 40px #ff9f22, 0 0 50px #f78b11, 0 0 60px #f78b11, 0 0 70px #f78b11, 0 0 80px #f78b11;
+            }
+        }
+
+        @-webkit-keyframes glow-table {
+            from {
+                box-shadow: 0 0 10px #d17600, 0 0 20px #d17600, 0 0 30px #e904ddb0, 0 0 40px #e904ddb0, 0 0 50px #e904ddb0, 0 0 60px #e904ddb0, 0 0 70px #e904ddb0;
+            }
+            to {
+                box-shadow: 0 0 20px #ff9f22, 0 0 30px #ff9f22, 0 0 40px #ff9f22, 0 0 50px #f78b11, 0 0 60px #f78b11, 0 0 70px #f78b11, 0 0 80px #f78b11;
+            }
+        }
+
+        @font-face {
+            font-family: "AlienEncounters";
+            src: url("SFAlienEncounters.ttf") format("opentype");
+        }
+
+        @font-face {
+            font-family: "AlienEncountersItalic";
+            src: url("SFAlienEncounters-Italic.ttf") format("opentype");
+        }
+
+        .glow {
+            font-size: 80px;
+            color: rgba(193, 22, 199,1);
+            text-align: center;
+            -webkit-animation: glow 1s ease-in-out infinite alternate;
+            -moz-animation: glow 1s ease-in-out infinite alternate;
+            animation: glow 1s ease-in-out infinite alternate;
+            font-family: 'AlienEncountersItalic';
+        }
+
+        
+    
     </style>
 
 </head>
 <body>
-    <div id="score">
-        Score: 0 <br>
-        Streak: 0x
+    <div id="score" >
     </div>
-    <div id="__drop" style="width: 100%; height: 100%; top: 0; left: 0; position: fixed;"></div>
+    <div id='highscore'></div>
+    <div id="__drop" class="fill" style="width: 100%; height: 100%; top: 0; left: 0; position: fixed;">
+        <img src="./world/Wallpaper V3.png" alt="" />
+    </div>
+    <div id="loader" class="fill" style="width: 100%; height: 100%; top: 0; left: 0; position: fixed; display: none;">
+        <div class="loader loader-7">
+            <div class="line line1"></div>
+            <div class="line line2"></div>
+            <div class="line line3"></div>
+            <div class="line line4"></div>
+            <div class="line line5"></div>
+        </div>
+    </div id="loader">
+    <div id="gameover" style="width: 100%; height: 100%; top: 0; left: 0; position: fixed; display: none; ">
+        <div style="text-align: center; vertical-align: middle; margin-top: 10%; padding-bottom: 5%;" class="glow">Result</div>
+        <table class="score-table">
+            <tr class="score2">
+                <td style="width: 30%;">Score</td>
+                <td id="score2" style="width: 60%; text-align: right; ">000</td>
+            </tr>   
+            <tr class="perfect">
+                <td>Perfect Hits</td>
+                <td id="perfect" style="text-align: right;">000</td>
+            </tr>
+            <tr>
+                <td>Early Hits</td>
+                <td id="early" style="text-align: right;">000</td>
+            </tr>
+            <tr>
+                <td>Late Hits</td>
+                <td id="late" style="text-align: right;">000</td>
+            </tr>
+            <tr>
+                <td>Miss</td>
+                <td id="miss" style="text-align: right;">000</td>
+            </tr>
+            <tr>
+                <td>Accuracy(percent)</td>
+                <td style="text-align: right;"><div id="accuracy"></div></td>
+            </tr>
+            <tr>
+                <td>Highest Streak</td>
+                <td id="maxStreak" style="text-align: right;">000</td>
+            </tr>
+        </table>
+        
+        <div class="glow" id='newhs' style="display: none;">New Highscore</div>
+    </div>
     <script src="./js/three.min.js"></script>
     <script src="./js/RectAreaLightUniformsLib.js"></script>
     <script src="./js/GLTFLoader.js"></script>

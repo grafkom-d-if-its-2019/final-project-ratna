@@ -31,11 +31,9 @@ app.post('/generate', async (req, res)=>{
             let song = req.files.song;
             var mp3hash;
             console.log('Hey!')
-            song.mv('./infer/data/unprocessed.mp3');
-            md5File('./infer/data/unprocessed.mp3',(err,hash)=>{
-                console.log(hash);
-                mp3hash = hash;
-            })
+            await song.mv('./infer/data/unprocessed.mp3');
+            mp3hash = md5File.sync('./infer/data/unprocessed.mp3');
+            console.log(mp3hash)
             const { spawn } = require('child_process');
             const infer = spawn('cmd.exe', ['/c','infer\\program\\infer.bat']);
 
@@ -52,6 +50,16 @@ app.post('/generate', async (req, res)=>{
                 // console.log(data.toString())
                 let raw = fs.readFileSync('./infer/beats.json');
                 let json = JSON.parse(raw);
+                let score = {}
+                try{
+                    score = fs.readFileSync('score.json')
+                    score = JSON.parse(score)
+                }catch(err){
+                    console.log(err)
+                } 
+                // console.log(mp3hash)
+                if(score[mp3hash]) score = score[mp3hash]
+                else score = 0
                 // console.log(json)
                 res.send({
                     status: true,
@@ -62,12 +70,49 @@ app.post('/generate', async (req, res)=>{
                         size: song.size
                     },
                     beats: json,
-                    hash: mp3hash
+                    hash: mp3hash,
+                    highscore: score,
                 });
             });
 
         }
     } catch (err) {
+        console.log(err)
+        res.status(500).send(err);
+    }
+})
+
+app.post('/score', async (req,res)=>{
+    try {
+        let hash = req.body.hash
+        let newscore = req.body.score
+        console.log(hash)
+        console.log(newscore)
+        let score = {}
+
+        try{
+            score = fs.readFileSync('score.json')
+            score = JSON.parse(score)
+        }catch(err){
+           console.log(err)
+        }
+        console.log(score)
+
+        if(score[hash]===undefined){
+            console.log('nohash')
+            score[hash] = newscore
+            fs.writeFileSync("score.json",JSON.stringify(score))
+        }
+        else if(newscore>Number(score[hash])) {
+            console.log('hash')
+            score[hash] = newscore
+            fs.writeFileSync("score.json",JSON.stringify(score))
+        }
+
+        res.status(200).send({
+            message: 'OK'
+        })
+    } catch (error) {
         console.log(err)
         res.status(500).send(err);
     }
