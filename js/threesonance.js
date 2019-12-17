@@ -4,6 +4,7 @@ const height = window.innerHeight
 var camSpeed = -0.01
 const eps = 75
 var rng
+const settings = jQuery.getJSON('./js/settings.json')
 
 // GRID MATERIAL
 var material_1 = new THREE.MeshPhongMaterial({ 
@@ -426,7 +427,7 @@ threesonance.showScore = () => {
     jQuery('#accuracy').html((((noteCount-miss)/noteCount)*100).toFixed(2))
     jQuery('#maxStreak').html(maxStreak)
     if(score>highscore) jQuery('#newhs').css('display','');
-    var url = 'http://10.151.32.76:3000/score'
+    var url = settings.server+'/score'
     var xhr = new XMLHttpRequest()
     var formData = new FormData()
     xhr.open('POST', url, true)
@@ -521,7 +522,7 @@ function musicLoad(){
     });
 
     function uploadFile(file,data) {
-        var url = 'http://10.151.32.76:3000/generate'
+        var url = settings.server+'/generate'
         var xhr = new XMLHttpRequest()
         var formData = new FormData()
         xhr.open('POST', url, true)

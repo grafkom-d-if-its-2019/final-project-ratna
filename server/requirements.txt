@@ -1,0 +1,7 @@
+librosa
+numpy
+pydub
+numba
+soundfile
+sklearn
+scipy
