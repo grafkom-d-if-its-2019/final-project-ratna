@@ -11,6 +11,7 @@ Sebuah rhythm game 3D yang dibuat menggunakan library Three.js
     - [Instalasi Server](#instalasi-server)
     - [Konfigurasi Server](#konfigurasi-server)
     - [Caveats](#caveats)
+   - [Reference](#reference)
 
 ## Konfigurasi
 Untuk mengubah alamat server yang digunakan(default 127.0.0.1:2999), ubah isi **settings.json** pada folder **js**
@@ -48,3 +49,5 @@ Untuk mengubah port listen server yang digunakan, ubah nilai **PORT** di dalam *
 ### Caveats
 Karena beberapa limitasi, generasi note hanya bisa dilakukan untuk satu request lagu pada satu waktu, melakukan request lebih dari satu lagu pada satu waktu akan mengakibatkan ketidaksesuaian pada notemap yang dibuat
 
+## Reference
+- https://medium.com/datadriveninvestor/automatic-drummer-with-deep-learning-3e92723b5a79
